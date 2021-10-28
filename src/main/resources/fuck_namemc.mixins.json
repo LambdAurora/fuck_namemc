@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "dev.lambdaurora.fuck_namemc.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "ClientConnectionAccessor",
+    "ClientConnectionMixin"
+  ],
+  "server": [
+    "ServerHandshakeNetworkHandlerMixin",
+    "ServerQueryNetworkHandlerMixin",
+    "ServerNetworkIoMixin$ServerChannelHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

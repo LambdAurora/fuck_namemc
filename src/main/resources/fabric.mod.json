@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "fuck_namemc",
+  "name": "Fuck NameMC",
+  "version": "${version}",
+  "description": "Modifies server status ping to NameMC only.",
+  "authors": [
+    "LambdAurora"
+  ],
+  "contact": {
+    "sources": "https://github.com/LambdAurora/fuck_namemc",
+    "issues": "https://github.com/LambdAurora/fuck_namemc/issues"
+  },
+  "license": "LGPLv3",
+  "icon": "assets/fuck_namemc/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "dev.lambdaurora.fuck_namemc.FuckNameMC"
+    ]
+  },
+  "mixins": [
+    "fuck_namemc.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "minecraft": ">=1.17",
+    "java": ">=16"
+  }
+}

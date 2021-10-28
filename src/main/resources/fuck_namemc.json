@@ -1,0 +1,19 @@
+{
+  "silent": true,
+  "namemc_addresses": [
+    "2606:4700:20::681b:1272",
+    "104.27.18.114",
+    "51.222.110.150"
+  ],
+  "alternate_motd": [
+    ""
+  ],
+  "alternate_player_list": [
+    "No",
+    "This",
+    "Is",
+    "Not",
+    "Fucking",
+    "Public"
+  ]
+}
