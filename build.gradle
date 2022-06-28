@@ -12,7 +12,7 @@ version = "${project.mod_version}+${getMCVersionString()}"
 archivesBaseName = project.archives_base_name
 
 // This field defines the Java version your mod target.
-def targetJavaVersion = 16
+def targetJavaVersion = 17
 
 boolean isMCVersionNonRelease() {
 	return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')

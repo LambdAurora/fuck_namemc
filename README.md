@@ -1,7 +1,7 @@
 # Fuck NameMC
 
 <!-- modrinth_exclude.start -->
-![Java 16](https://img.shields.io/badge/language-Java%2016-9B599A.svg?style=flat-square) <!-- modrinth_exclude.end -->
+![Java 17](https://img.shields.io/badge/language-Java%2017-9B599A.svg?style=flat-square) <!-- modrinth_exclude.end -->
 [![GitHub license](https://img.shields.io/github/license/LambdAurora/fuck_namemc?style=flat-square)](https://raw.githubusercontent.com/LambdAurora/fuck_namemc/1.17/LICENSE)
 ![Environment: Server](https://img.shields.io/badge/environment-server-orangered?style=flat-square)
 [![Mod loader: Fabric]][fabric] <!-- modrinth_exclude.start -->
