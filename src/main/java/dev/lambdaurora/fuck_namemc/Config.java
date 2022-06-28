@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 LambdAurora <email@lambdaurora.dev>
+ * Copyright (c) 2021-2022 LambdAurora <email@lambdaurora.dev>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -26,11 +26,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.UuidUtil;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -60,7 +59,6 @@ public record Config(boolean silent, List<InetAddress> addresses, List<MutableTe
 	).apply(instance, Config::new));
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final JsonParser JSON_PARSER = new JsonParser();
 	private static final Random RANDOM = new Random();
 
 	private static boolean createConfigDirectoryIfNeeded() {
@@ -77,7 +75,7 @@ public record Config(boolean silent, List<InetAddress> addresses, List<MutableTe
 	public Text pickMotd() {
 		var alternates = this.alternateMotd();
 		if (alternates.isEmpty())
-			return new LiteralText("NameMC, please stop indexing this server.");
+			return Text.literal("NameMC, please stop indexing this server.");
 		int index = RANDOM.nextInt(alternates.size());
 		return this.alternateMotd().get(index);
 	}
@@ -117,7 +115,7 @@ public record Config(boolean silent, List<InetAddress> addresses, List<MutableTe
 		}
 
 		try (var reader = Files.newBufferedReader(CONFIG_PATH)) {
-			var result = CODEC.decode(JsonOps.INSTANCE, JSON_PARSER.parse(reader)).map(Pair::getFirst);
+			var result = CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(reader)).map(Pair::getFirst);
 			return result.result().orElseGet(() -> {
 				FuckNameMC.warn("Could not load configuration, using default configuration instead.");
 				return defaultConfig();
@@ -133,11 +131,11 @@ public record Config(boolean silent, List<InetAddress> addresses, List<MutableTe
 		return new Config(true,
 				Config.deserializeAddresses(List.of("2606:4700:20::681b:1272", "104.27.18.114", "51.222.110.150")),
 				List.of(
-						new LiteralText("F*** you NameMC.").formatted(Formatting.RED),
-						new LiteralText("NameMC, stop indexing this server.").formatted(Formatting.RED),
-						new LiteralText("NameMC, please learn basic decency.").formatted(Formatting.RED),
-						new LiteralText("NameMC, give me a way to opt out.").formatted(Formatting.RED),
-						new LiteralText("NameMC, I hate you, please stop indexing this.").formatted(Formatting.RED)
+						Text.literal("F*** you NameMC.").formatted(Formatting.RED),
+						Text.literal("NameMC, stop indexing this server.").formatted(Formatting.RED),
+						Text.literal("NameMC, please learn basic decency.").formatted(Formatting.RED),
+						Text.literal("NameMC, give me a way to opt out.").formatted(Formatting.RED),
+						Text.literal("NameMC, I hate you, please stop indexing this.").formatted(Formatting.RED)
 				),
 				Config.deserializePlayerList(List.of("No",
 						"This",
@@ -153,6 +151,6 @@ public record Config(boolean silent, List<InetAddress> addresses, List<MutableTe
 
 	private static List<GameProfile> deserializePlayerList(List<String> raw) {
 		return raw.stream().map(name -> name.substring(0, Math.min(32, name.length())))
-				.map(name -> new GameProfile(PlayerEntity.getOfflinePlayerUuid(name), name)).toList();
+				.map(name -> new GameProfile(UuidUtil.getOfflinePlayerUuid(name), name)).toList();
 	}
 }

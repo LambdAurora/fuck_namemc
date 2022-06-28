@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 LambdAurora <email@lambdaurora.dev>
+ * Copyright (c) 2021-2022 LambdAurora <email@lambdaurora.dev>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -53,7 +53,7 @@ public class FuckNameMC implements DedicatedServerModInitializer {
 	private static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(ServerMetadata.Version.class, new ServerMetadata.Version.Serializer())
 			.registerTypeAdapter(ServerMetadata.Players.class, new ServerMetadata.Players.Deserializer())
-			.registerTypeAdapter(ServerMetadata.class, new ServerMetadata.Deserializer())
+			.registerTypeAdapter(ServerMetadata.class, new ServerMetadata.Serializer())
 			.registerTypeHierarchyAdapter(Text.class, new Text.Serializer())
 			.registerTypeHierarchyAdapter(Style.class, new Style.Serializer())
 			.registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
