@@ -1,9 +1,9 @@
 plugins {
-    id 'fabric-loom' version '0.9.+'
-    id 'io.github.juuxel.loom-quiltflower' version '1.3.+'
-    id 'java-library'
-    id 'maven-publish'
-    id 'org.cadixdev.licenser' version '0.6.1'
+	id 'fabric-loom' version '0.12.+'
+	id 'io.github.juuxel.loom-quiltflower' version '1.7.+'
+	id 'java-library'
+	id 'maven-publish'
+	id 'org.quiltmc.gradle.licenser' version '1.1.+'
 }
 
 group = project.maven_group
@@ -14,123 +14,118 @@ archivesBaseName = project.archives_base_name
 def targetJavaVersion = 16
 
 boolean isMCVersionNonRelease() {
-    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
-            || project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
+	return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
+			|| project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
 }
 
 String getMCVersionString() {
-    if (isMCVersionNonRelease()) {
-        return project.minecraft_version
-    }
-    def version = project.minecraft_version.split('\\.')
-    return version[0] + '.' + version[1]
+	if (isMCVersionNonRelease()) {
+		return project.minecraft_version
+	}
+	def version = project.minecraft_version.split('\\.')
+	return version[0] + '.' + version[1]
 }
 
 String parseReadme() {
-    def excludeRegex = /(?m)<!-- modrinth_exclude\.start -->(.|\n)*?<!-- modrinth_exclude\.end -->/
-    def linkRegex = /!\[([A-z_ ]+)]\((images\/[A-z.\/_]+)\)/
+	def excludeRegex = /(?m)<!-- modrinth_exclude\.start -->(.|\n)*?<!-- modrinth_exclude\.end -->/
+	def linkRegex = /!\[([A-z_ ]+)]\((images\/[A-z.\/_]+)\)/
 
-    def readme = (String) file('README.md').text
-    readme = readme.replaceAll(excludeRegex, '')
-    return readme
+	def readme = (String) file('README.md').text
+	readme = readme.replaceAll(excludeRegex, '')
+	return readme
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+	mavenLocal()
+	mavenCentral()
 }
 
 configurations {
-    shadow
-    api.extendsFrom shadow
+	shadow
+	api.extendsFrom shadow
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
-    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
+	sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+	targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
 
-    withSourcesJar()
+	withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = 'UTF-8'
+	it.options.encoding = 'UTF-8'
 
-    it.options.release.set(targetJavaVersion)
+	it.options.release.set(targetJavaVersion)
 }
 
 processResources {
-    inputs.property 'version', project.version
+	inputs.property 'version', project.version
 
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
+	filesMatching('fabric.mod.json') {
+		expand 'version': project.version
+	}
 }
 
 jar {
-    from('LICENSE') {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
+	from('LICENSE') {
+		rename { "${it}_${project.archivesBaseName}" }
+	}
 }
 
 license {
-    header file('HEADER')
-    include '**/*.java'
+	rule file('HEADER')
+	include '**/*.java'
 }
 
 // configure the maven publication
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
 
-            pom {
-                name = "FuckNameMC"
-                description = "Modifies ping status for NameMC only."
-            }
+			pom {
+				name = "FuckNameMC"
+				description = "Modifies ping status for NameMC only."
+			}
 
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
+			pom.withXml {
+				def dependenciesNode = asNode().appendNode('dependencies')
 
-                configurations.shadow.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
+				configurations.shadow.allDependencies.each {
+					def dependencyNode = dependenciesNode.appendNode('dependency')
 
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
-                    dependencyNode.appendNode('scope', 'compile')
-                }
-            }
-        }
-    }
+					dependencyNode.appendNode('groupId', it.group)
+					dependencyNode.appendNode('artifactId', it.name)
+					dependencyNode.appendNode('version', it.version)
+					dependencyNode.appendNode('scope', 'compile')
+				}
+			}
+		}
+	}
 
-    repositories {
-        mavenLocal()
-        maven {
-            name = 'BuildDirLocal'
-            url = "$buildDir/repo"
-        }
+	repositories {
+		mavenLocal()
+		maven {
+			name = 'BuildDirLocal'
+			url = "$buildDir/repo"
+		}
 
-        def fuckNameMcMaven = System.getenv('FUCK_NAMEMC_MAVEN')
-        if (fuckNameMcMaven) {
-            maven {
-                name = 'FuckNameMCMaven'
-                url = uri(fuckNameMcMaven)
-                credentials {
-                    username = project.findProperty('gpr.user') ?: System.getenv('MAVEN_USERNAME')
-                    password = project.findProperty('gpr.key') ?: System.getenv('MAVEN_PASSWORD')
-                }
-            }
-        }
-    }
+		def fuckNameMcMaven = System.getenv('FUCK_NAMEMC_MAVEN')
+		if (fuckNameMcMaven) {
+			maven {
+				name = 'FuckNameMCMaven'
+				url = uri(fuckNameMcMaven)
+				credentials {
+					username = project.findProperty('gpr.user') ?: System.getenv('MAVEN_USERNAME')
+					password = project.findProperty('gpr.key') ?: System.getenv('MAVEN_PASSWORD')
+				}
+			}
+		}
+	}
 }
