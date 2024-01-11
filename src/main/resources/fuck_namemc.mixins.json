@@ -4,12 +4,13 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "ClientConnectionAccessor",
-    "ClientConnectionMixin"
+    "ClientConnectionMixin",
+    "ServerNetworkIoMixin",
+    "ServerNetworkIoMixin$ChannelInitializerMixin"
   ],
   "server": [
     "ServerHandshakeNetworkHandlerMixin",
-    "ServerQueryNetworkHandlerMixin",
-    "ServerNetworkIoMixin$ServerChannelHandler"
+    "ServerQueryNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

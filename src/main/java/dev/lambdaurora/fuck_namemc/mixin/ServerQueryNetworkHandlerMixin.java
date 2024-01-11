@@ -21,16 +21,19 @@ import com.mojang.authlib.GameProfile;
 import dev.lambdaurora.fuck_namemc.ClientConnectionShenanigans;
 import dev.lambdaurora.fuck_namemc.FuckNameMC;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.c2s.query.QueryRequestC2SPacket;
-import net.minecraft.network.packet.s2c.query.QueryResponseS2CPacket;
+import net.minecraft.network.packet.c2s.query.MetadataQueryC2SPacket;
+import net.minecraft.network.packet.s2c.query.ServerMetadataS2CPacket;
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.server.network.ServerQueryNetworkHandler;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Optional;
 
 @Mixin(ServerQueryNetworkHandler.class)
 public class ServerQueryNetworkHandlerMixin {
@@ -41,17 +44,24 @@ public class ServerQueryNetworkHandlerMixin {
 	@Shadow
 	private boolean responseSent;
 
-	@Inject(method = "onRequest", at = @At("HEAD"), cancellable = true)
-	private void onRequest(QueryRequestC2SPacket packet, CallbackInfo ci) {
+	@Inject(method = "onMetadata", at = @At("HEAD"), cancellable = true)
+	private void onRequest(MetadataQueryC2SPacket packet, CallbackInfo ci) {
 		if (((ClientConnectionShenanigans) this.connection).fuck_namemc$isNameMC() && !this.responseSent) {
 			this.responseSent = true;
-			var metadata = new ServerMetadata();
-			metadata.setDescription(FuckNameMC.config.pickMotd());
-			var players = new ServerMetadata.Players(0, 0);
-			players.setSample(FuckNameMC.config.alternatePlayerList().toArray(GameProfile[]::new));
-			metadata.setPlayers(players);
-			metadata.setVersion(new ServerMetadata.Version("AntiNameMC", 0));
-			this.connection.send(new QueryResponseS2CPacket(metadata));
+
+			Text description = FuckNameMC.config.pickMotd();
+			ServerMetadata.Players players = new ServerMetadata.Players(1, 0, FuckNameMC.config.alternatePlayerList());
+			ServerMetadata.Version version = new ServerMetadata.Version("AntiNameMC", 0);
+
+			var metadata = new ServerMetadata(
+					description,
+					Optional.of(players),
+					Optional.of(version),
+					Optional.empty(),
+					true
+			);
+
+			this.connection.send(new ServerMetadataS2CPacket(metadata));
 			ci.cancel();
 		}
 	}

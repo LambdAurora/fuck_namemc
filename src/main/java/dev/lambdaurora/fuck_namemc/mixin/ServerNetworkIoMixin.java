@@ -18,16 +18,18 @@
 package dev.lambdaurora.fuck_namemc.mixin;
 
 import io.netty.channel.Channel;
+import net.minecraft.server.network.ServerNetworkIo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@Mixin(ServerNetworkIo.class)
 public abstract class ServerNetworkIoMixin {
-	@Mixin(targets = {"net.minecraft.server.ServerNetworkIo$1"})
-	public static abstract class ServerChannelHandler {
+	@Mixin(targets = {"net.minecraft.server.network.ServerNetworkIo$C_nbluewha"})
+	public static abstract class ChannelInitializerMixin {
 		@Inject(
-				method = "Lnet/minecraft/server/ServerNetworkIo$1;initChannel(Lio/netty/channel/Channel;)V",
+				method = "initChannel",
 				at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;getRateLimit()I")
 		)
 		private void onInitChannel(Channel channel, CallbackInfo ci) {

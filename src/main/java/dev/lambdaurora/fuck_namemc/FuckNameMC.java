@@ -19,23 +19,25 @@ package dev.lambdaurora.fuck_namemc;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import io.netty.channel.Channel;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.Packet;
 import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
 import net.minecraft.network.packet.c2s.login.LoginHelloC2SPacket;
 import net.minecraft.network.packet.c2s.login.LoginKeyC2SPacket;
 import net.minecraft.network.packet.c2s.login.LoginQueryResponseC2SPacket;
+import net.minecraft.network.packet.c2s.query.MetadataQueryC2SPacket;
 import net.minecraft.network.packet.c2s.query.QueryPingC2SPacket;
-import net.minecraft.network.packet.c2s.query.QueryRequestC2SPacket;
 import net.minecraft.network.packet.s2c.login.*;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.query.QueryPongS2CPacket;
-import net.minecraft.network.packet.s2c.query.QueryResponseS2CPacket;
+import net.minecraft.network.packet.s2c.query.ServerMetadataS2CPacket;
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -51,9 +53,6 @@ import java.net.SocketAddress;
 
 public class FuckNameMC implements DedicatedServerModInitializer {
 	private static final Gson GSON = new GsonBuilder()
-			.registerTypeAdapter(ServerMetadata.Version.class, new ServerMetadata.Version.Serializer())
-			.registerTypeAdapter(ServerMetadata.Players.class, new ServerMetadata.Players.Deserializer())
-			.registerTypeAdapter(ServerMetadata.class, new ServerMetadata.Serializer())
 			.registerTypeHierarchyAdapter(Text.class, new Text.Serializer())
 			.registerTypeHierarchyAdapter(Style.class, new Style.Serializer())
 			.registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
@@ -135,8 +134,8 @@ public class FuckNameMC implements DedicatedServerModInitializer {
 			var value = field.get(packet);
 			String stringValue = value == null ? "null" : value.toString();
 
-			if (value instanceof ServerMetadata) {
-				stringValue = GSON.toJson(value);
+			if (value instanceof ServerMetadata meta) {
+				stringValue = ServerMetadata.CODEC.encodeStart(JsonOps.INSTANCE, meta).result().map(GSON::toJson).orElse("<serialization error>");
 			}
 
 			builder.append(stringValue);
@@ -155,9 +154,9 @@ public class FuckNameMC implements DedicatedServerModInitializer {
 			return "Query Ping";
 		else if (clazz == QueryPongS2CPacket.class)
 			return "Query Pong";
-		else if (clazz == QueryRequestC2SPacket.class)
+		else if (clazz == MetadataQueryC2SPacket.class)
 			return "Query Request";
-		else if (clazz == QueryResponseS2CPacket.class)
+		else if (clazz == ServerMetadataS2CPacket.class)
 			return "Query Response";
 		else if (clazz == LoginHelloC2SPacket.class || clazz == LoginHelloS2CPacket.class)
 			return "Login Hello";
@@ -178,8 +177,8 @@ public class FuckNameMC implements DedicatedServerModInitializer {
 
 	public static String describeNetworkSide(NetworkSide side) {
 		return switch (side) {
-			case CLIENTBOUND -> "C <- S";
-			case SERVERBOUND -> "C -> S";
+			case S2C -> "C <- S";
+			case C2S -> "C -> S";
 		};
 	}
 
